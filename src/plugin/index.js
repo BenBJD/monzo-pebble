@@ -705,8 +705,12 @@ Pebble.registerConfigHandler(async function (message, respond) {
     }
 
     var accRes = await apiGetAccounts(token);
+    var isPendingApproval = (!accRes.ok && (accRes.status === 403 || accRes.error === 'PERMISSION_DENIED'));
     var accounts = (accRes.ok && accRes.accounts) || [];
     var selected = getSelectedAccountId() || (accounts[0] && accounts[0].id) || '';
+    if (selected && !getSelectedAccountId()) {
+      setSelectedAccountId(selected);
+    }
 
     var potCount = 0;
     if (selected) {
@@ -715,7 +719,8 @@ Pebble.registerConfigHandler(async function (message, respond) {
     }
 
     respond({
-      configured: true,
+      configured: !isPendingApproval && accounts.length > 0,
+      pendingApproval: isPendingApproval,
       isOAuth: hasOAuth,
       userId: pingRes.json && pingRes.json.user_id,
       accounts: accounts,
@@ -776,26 +781,43 @@ Pebble.registerConfigHandler(async function (message, respond) {
       var testPing = await apiWhoAmI(json.access_token);
       var testAccs = await apiGetAccounts(json.access_token);
 
-      if (!testAccs.ok || !testAccs.accounts || !testAccs.accounts.length) {
+      var isPendingApproval = (!testAccs.ok && (testAccs.status === 403 || testAccs.error === 'PERMISSION_DENIED'));
+
+      if (!testAccs.ok && !isPendingApproval) {
+        respond({ error: 'Monzo API error: ' + (testAccs.message || ('HTTP ' + testAccs.status)) });
+        return;
+      }
+
+      if (testAccs.ok && (!testAccs.accounts || !testAccs.accounts.length)) {
         respond({ error: 'OAuth connected, but no open retail or joint accounts found.' });
         return;
       }
 
-      var defaultId = testAccs.accounts[0].id;
-      setSelectedAccountId(defaultId);
-      Pebble.refreshSources(SOURCES);
+      var defaultId = (testAccs.accounts && testAccs.accounts[0]) ? testAccs.accounts[0].id : '';
+      if (defaultId) {
+        setSelectedAccountId(defaultId);
+        Pebble.refreshSources(SOURCES);
+      }
 
       var potCount = 0;
-      var potsRes = await apiGetPots(defaultId, json.access_token);
-      if (potsRes.ok && potsRes.pots) potCount = potsRes.pots.length;
+      if (defaultId) {
+        var potsRes = await apiGetPots(defaultId, json.access_token);
+        if (potsRes.ok && potsRes.pots) potCount = potsRes.pots.length;
+      }
 
       respond({
-        configured: true,
+        configured: !isPendingApproval && !!defaultId,
+        pendingApproval: isPendingApproval,
         isOAuth: true,
         userId: testPing.json && testPing.json.user_id,
-        accounts: testAccs.accounts,
+        accounts: testAccs.accounts || [],
         selectedAccountId: defaultId,
-        potsCount: potCount
+        potsCount: potCount,
+        clientId: clientId,
+        redirectUri: redirectUri,
+        message: isPendingApproval
+          ? 'Credentials saved! Please open your Monzo app to approve the login request, then tap Check Approval.'
+          : undefined
       });
       return;
     } catch (e) {

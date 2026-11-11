@@ -37,5 +37,5 @@ jobs:
           TOKEN=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://appstore-api.repebble.com" | jq -r .value)
           curl -fsS -H "Authorization: Bearer $TOKEN" \
-            --form-string version=$VERSION -F "pbwFile=monzo-pebble.pbw" --form-string isPublished=true \
+            --form-string version=$VERSION -F "pbwFile=@monzo-pebble.pbw" --form-string isPublished=true \
             https://appstore-api.repebble.com/api/dashboard/apps/818e20c1d8ce4adcb5590c5e/releases

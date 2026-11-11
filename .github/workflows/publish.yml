@@ -1,0 +1,24 @@
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pebble build
+      - uses: actions/upload-artifact@v4
+        with: { name: pbw, path: build/my-app.pbw }
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: pbw }
+      - run: |
+          TOKEN=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://appstore-api.repebble.com" | jq -r .value)
+          curl -fsS -H "Authorization: Bearer $TOKEN" \
+            --form-string version=1.2.0 -F "pbwFile=@my-app.pbw" --form-string isPublished=true \
+            https://appstore-api.repebble.com/api/dashboard/apps/<APP_ID>/releases

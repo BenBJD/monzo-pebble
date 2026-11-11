@@ -1,0 +1,3 @@
+build/
+*.md
+.lock-waf_linux_build

@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monzo Pebble App - Authorization Callback</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --coral: #FF5B35;
+      --coral-hover: #E44825;
+      --navy: #14233C;
+      --bg: #F5F7FA;
+      --card-bg: #FFFFFF;
+      --card-border: #E2E8F0;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --code-bg: #F1F5F9;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0F172A;
+        --card-bg: #1E293B;
+        --card-border: #334155;
+        --text: #F8FAFC;
+        --text-muted: #94A3B8;
+        --code-bg: #0F172A;
+      }
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      background: var(--coral);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 24px;
+      box-shadow: 0 2px 8px rgba(255, 91, 53, 0.35);
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+    }
+    .badge.success {
+      background: rgba(39, 174, 96, 0.15);
+      color: #27ae60;
+    }
+    .badge.info {
+      background: rgba(41, 128, 185, 0.15);
+      color: #2980b9;
+    }
+    .badge.error {
+      background: rgba(231, 76, 60, 0.15);
+      color: #e74c3c;
+    }
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+      word-break: break-all;
+      user-select: all;
+      margin-bottom: 16px;
+      color: var(--coral);
+      font-weight: 600;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: var(--coral);
+      color: white;
+      transition: background 0.15s ease, transform 0.1s ease;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: var(--coral-hover);
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+    .steps {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--card-border);
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+    .steps ol {
+      padding-left: 20px;
+      margin-top: 8px;
+    }
+    .steps li {
+      margin-bottom: 8px;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div class="logo-badge">M</div>
+        <div>
+          <h1>Monzo Pebble Connect</h1>
+          <div class="subtitle">OAuth 2.0 Authorization Callback</div>
+        </div>
+      </div>
+
+      <!-- State 1: Code Received -->
+      <div id="state-code" class="hidden">
+        <div class="badge success">
+          <span>✓</span> Authorization Code Received
+        </div>
+        <p style="margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">
+          Your temporary authorization code is ready. Copy it and paste it back into your Monzo Pebble plugin settings:
+        </p>
+        <div id="code-display" class="code-box"></div>
+        <button id="btn-copy-code" type="button" class="btn">📋 Copy Authorization Code</button>
+
+        <div class="steps">
+          <strong>Next steps:</strong>
+          <ol>
+            <li>Tap <strong>Copy Authorization Code</strong> above.</li>
+            <li>Switch back to the <strong>Pebble mobile app</strong>.</li>
+            <li>Paste the code into the <strong>Authorization Code</strong> field and tap <strong>Connect</strong>.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- State 2: Error -->
+      <div id="state-error" class="hidden">
+        <div class="badge error">
+          <span>✕</span> Authorization Failed
+        </div>
+        <p id="error-message" style="margin-bottom: 16px; font-size: 14px; color: #e74c3c; line-height: 1.5;"></p>
+        <div class="steps">
+          Please make sure you approve the login prompt in the Monzo mobile app, and check that your Monzo OAuth client redirect URL matches this page exactly.
+        </div>
+      </div>
+
+      <!-- State 3: Standalone Helper / Direct visit -->
+      <div id="state-ready" class="hidden">
+        <div class="badge info">
+          <span>ℹ</span> Redirect URI Ready
+        </div>
+        <p style="margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">
+          Use this page URL as the <strong>Redirect URL</strong> when creating your OAuth Client in the Monzo Developer Portal:
+        </p>
+        <div id="uri-display" class="code-box"></div>
+        <button id="btn-copy-uri" type="button" class="btn">📋 Copy Redirect URI</button>
+
+        <div class="steps">
+          <strong>How to set up:</strong>
+          <ol>
+            <li>Go to <a href="https://developers.monzo.com" target="_blank" style="color: var(--coral);">developers.monzo.com</a>.</li>
+            <li>Click <strong>Clients</strong> &rarr; <strong>New OAuth Client</strong>.</li>
+            <li>Set <strong>Confidentiality</strong> to <strong>Confidential</strong>.</li>
+            <li>Paste this page's URL into <strong>Redirect URLs</strong>.</li>
+            <li>Copy your <strong>Client ID</strong> and <strong>Client Secret</strong> into the Monzo Pebble plugin settings.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      // Fallback check in hash if redirect used hash fragments
+      if (!params.get('code') && !params.get('error') && window.location.hash) {
+        var hashStr = window.location.hash.substring(1);
+        params = new URLSearchParams(hashStr);
+      }
+
+      var code = params.get('code');
+      var error = params.get('error') || params.get('error_description');
+
+      function copyText(text, btnId, originalLabel) {
+        var btn = document.getElementById(btnId);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            btn.textContent = '✓ Copied to Clipboard!';
+            setTimeout(function () { btn.textContent = originalLabel; }, 2500);
+          }).catch(function () {
+            fallbackCopy(text, btn, originalLabel);
+          });
+        } else {
+          fallbackCopy(text, btn, originalLabel);
+        }
+      }
+
+      function fallbackCopy(text, btn, originalLabel) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          btn.textContent = '✓ Copied to Clipboard!';
+          setTimeout(function () { btn.textContent = originalLabel; }, 2500);
+        } catch (e) {
+          alert('Please copy manually: ' + text);
+        }
+        document.body.removeChild(ta);
+      }
+
+      if (code) {
+        document.getElementById('state-code').classList.remove('hidden');
+        document.getElementById('code-display').textContent = code;
+        document.getElementById('btn-copy-code').onclick = function () {
+          copyText(code, 'btn-copy-code', '📋 Copy Authorization Code');
+        };
+      } else if (error) {
+        document.getElementById('state-error').classList.remove('hidden');
+        document.getElementById('error-message').textContent = decodeURIComponent(error);
+      } else {
+        var currentUri = window.location.origin + window.location.pathname;
+        document.getElementById('state-ready').classList.remove('hidden');
+        document.getElementById('uri-display').textContent = currentUri;
+        document.getElementById('btn-copy-uri').onclick = function () {
+          copyText(currentUri, 'btn-copy-uri', '📋 Copy Redirect URI');
+        };
+      }
+    })();
+  </script>
+</body>
+</html>

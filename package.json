@@ -1,0 +1,257 @@
+{
+  "name": "monzoplugin",
+  "author": "MakeAwesomeHappen",
+  "version": "1.1.0",
+  "keywords": [
+    "pebble-app",
+    "pebble-plugin"
+  ],
+  "private": true,
+  "dependencies": {},
+  "pebble": {
+    "displayName": "Monzo",
+    "uuid": "f4bf3afe-bfe4-4c3c-8607-2fb45c00524f",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite",
+      "emery",
+      "flint",
+      "gabbro"
+    ],
+    "watchapp": {
+      "watchface": false
+    },
+    "usesPermissions": [
+      {
+        "name": "Internet",
+        "parameters": {
+          "domains": [
+            "api.monzo.com"
+          ]
+        },
+        "reason": "To fetch Monzo account balances, pots, and transactions",
+        "required": true
+      }
+    ],
+    "configPage": "src/config.html",
+    "plugin": {
+      "description": "Monzo bank integration providing real-time balances, spending, pots, and recent transactions.",
+      "script": "src/plugin/index.js",
+      "sources": [
+        {
+          "category": "finance",
+          "items": [
+            "account"
+          ],
+          "properties": {
+            "name": [
+              "shortText",
+              "longText"
+            ],
+            "account_type": [
+              "shortText"
+            ],
+            "balance": [
+              "numericValue",
+              "shortText",
+              "longText"
+            ],
+            "total_balance": [
+              "numericValue",
+              "shortText",
+              "longText"
+            ],
+            "spend_today": [
+              "numericValue",
+              "shortText",
+              "longText"
+            ],
+            "currency": [
+              "shortText"
+            ],
+            "account_id": [
+              "shortText"
+            ]
+          },
+          "supportsMultiple": true,
+          "suggestedRefreshIntervalSec": 60
+        },
+        {
+          "category": "finance",
+          "items": [
+            "pot"
+          ],
+          "properties": {
+            "name": [
+              "shortText",
+              "longText"
+            ],
+            "balance": [
+              "numericValue",
+              "shortText",
+              "longText"
+            ],
+            "currency": [
+              "shortText"
+            ],
+            "account_id": [
+              "shortText"
+            ]
+          },
+          "supportsMultiple": true,
+          "suggestedRefreshIntervalSec": 120
+        },
+        {
+          "category": "finance",
+          "items": [
+            "transaction"
+          ],
+          "properties": {
+            "name": [
+              "shortText",
+              "longText"
+            ],
+            "amount": [
+              "numericValue",
+              "shortText",
+              "longText"
+            ],
+            "merchant": [
+              "shortText",
+              "longText"
+            ],
+            "created": [
+              "timestamp"
+            ],
+            "category": [
+              "shortText"
+            ],
+            "account_id": [
+              "shortText"
+            ]
+          },
+          "supportsMultiple": true,
+          "suggestedRefreshIntervalSec": 120
+        },
+        {
+          "category": "finance",
+          "items": [
+            "configured"
+          ],
+          "properties": {
+            "name": [
+              "shortText"
+            ],
+            "configured": [
+              "boolean",
+              "shortText"
+            ]
+          },
+          "supportsMultiple": false,
+          "suggestedRefreshIntervalSec": 60
+        }
+      ],
+      "actions": [
+        {
+          "name": "deposit_pot",
+          "description": "Deposit money into a savings pot.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "pot_id": {
+                "type": "string",
+                "description": "The pot ID"
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Amount in pence"
+              },
+              "account_id": {
+                "type": "string",
+                "description": "Source account ID (optional)"
+              }
+            },
+            "required": [
+              "pot_id",
+              "amount"
+            ],
+            "additionalProperties": false
+          },
+          "targets": [
+            "finance/pot",
+            "finance/account"
+          ]
+        },
+        {
+          "name": "withdraw_pot",
+          "description": "Withdraw money from a savings pot.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "pot_id": {
+                "type": "string",
+                "description": "The pot ID"
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Amount in pence"
+              },
+              "account_id": {
+                "type": "string",
+                "description": "Destination account ID (optional)"
+              }
+            },
+            "required": [
+              "pot_id",
+              "amount"
+            ],
+            "additionalProperties": false
+          },
+          "targets": [
+            "finance/pot",
+            "finance/account"
+          ]
+        }
+      ]
+    },
+    "messageKeys": [
+      "KEY_THEME",
+      "KEY_ACCOUNT_COUNT",
+      "KEY_STATUS",
+      "KEY_REQUEST_TYPE",
+      "KEY_ACC0_ID",
+      "KEY_ACC0_NAME",
+      "KEY_ACC0_BALANCE",
+      "KEY_ACC0_SPEND",
+      "KEY_ACC0_TOTAL",
+      "KEY_ACC0_POTS",
+      "KEY_ACC1_ID",
+      "KEY_ACC1_NAME",
+      "KEY_ACC1_BALANCE",
+      "KEY_ACC1_SPEND",
+      "KEY_ACC1_TOTAL",
+      "KEY_ACC1_POTS",
+      "KEY_ACC2_ID",
+      "KEY_ACC2_NAME",
+      "KEY_ACC2_BALANCE",
+      "KEY_ACC2_SPEND",
+      "KEY_ACC2_TOTAL",
+      "KEY_ACC2_POTS",
+      "KEY_ACC3_ID",
+      "KEY_ACC3_NAME",
+      "KEY_ACC3_BALANCE",
+      "KEY_ACC3_SPEND",
+      "KEY_ACC3_TOTAL",
+      "KEY_ACC3_POTS"
+    ],
+    "resources": {
+      "media": []
+    }
+  }
+}

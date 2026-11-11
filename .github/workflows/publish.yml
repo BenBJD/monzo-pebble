@@ -4,14 +4,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: astral-sh/setup-uv@v10.3.3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: 3.13
-      - run: "uvx --from pebble-tool pebble build"
-      - uses: actions/checkout@v4
-      - run: pebble build
-      - uses: actions/upload-artifact@v4
-        with: { name: pbw, path: build/my-app.pbw }
+          python-version: "3.13"
+
+      - name: Install Pebble Tool & SDK
+        run: |
+          uv tool install pebble-tool
+          pebble sdk install latest
+
+      - name: Build Pebble App
+        run: pebble build
+
+      - name: Upload PBW artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pbw
+          path: build/*.pbw
   publish:
     needs: build
     runs-on: ubuntu-latest
@@ -25,4 +38,4 @@ jobs:
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://appstore-api.repebble.com" | jq -r .value)
           curl -fsS -H "Authorization: Bearer $TOKEN" \
             --form-string version=1.2.0 -F "pbwFile=@my-app.pbw" --form-string isPublished=true \
-            https://appstore-api.repebble.com/api/dashboard/apps/<APP_ID>/releases
+            https://appstore-api.repebble.com/api/dashboard/apps/818e20c1d8ce4adcb5590c5e/releases

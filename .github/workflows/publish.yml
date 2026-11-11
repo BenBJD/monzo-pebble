@@ -4,6 +4,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          python-version: 3.13
+      - run: "uvx --from pebble-tool pebble build"
       - uses: actions/checkout@v4
       - run: pebble build
       - uses: actions/upload-artifact@v4

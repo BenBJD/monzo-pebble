@@ -1,5 +1,6 @@
 build/
 *.md
+!README.md
 .lock-waf_linux_build
 screenshots/
 .idea/

@@ -1,33 +1,23 @@
 # Monzo for Pebble
 
-A Pebble watchapp and system plugin that connects to the Monzo Developer API to display account balances, daily spending, and savings pots directly on your wrist.
+A Pebble watchapp that connects to the [Monzo Pebble Plugin](https://github.com/BenBJD/monzo-pebble-plugin) via the new Pebble Plugins API (`finance/*` sources) to display account balances, daily spending, and savings pots directly on your wrist.
 
 ## Features
 
 - **Multi-Account Support**: Switch between up to 4 Monzo accounts (Personal, Joint, Flex, and Business).
 - **At-a-Glance Balances**: View current account balance, today's spend, and total balance with pots.
 - **Pot Breakdown**: Open the details view to inspect individual savings pots and their balances.
-- **Pebble Plugin Integration**: Exposes standard `finance/*` sources (`finance/account`, `finance/pot`, `finance/transaction`, `finance/configured`) and actions (`deposit_pot`, `withdraw_pot`) for system integration and third-party watchfaces.
+- **Pebble Plugin Integration**: Subscribes directly to `finance/*` data sources (`finance/account`, `finance/pot`, `finance/configured`) provided by the Monzo Pebble Plugin.
 - **Theme Options**: Supports Light and Dark modes across color and monochrome screens.
 - **Cross-Platform**: Compatible with `aplite`, `basalt`, `chalk`, `diorite`, `emery`, `flint`, and `gabbro`.
 
 ## Setup & Configuration
 
-To connect the app to your Monzo account, you need personal API credentials from the Monzo Developer Portal:
+This watchapp relies on the **Monzo Pebble Plugin** installed on your Pebble phone app to supply bank data.
 
-1. Visit the [Monzo Developer Portal](https://developers.monzo.com/) and sign in.
-2. Under **Clients**, click **New Client**.
-3. Set the following fields:
-   - **Name**: `Monzo Pebble` (or your choice)
-   - **Redirect URLs**: The URL of your hosted callback page (you can use `https://benbjd.github.io/monzo-pebble/callback.html` - I won't see anything)
-   - **Description**: Personal Pebble watch integration
-   - **Confidentiality**: Confidential
-4. Save the client and copy your **Client ID** and **Client Secret**.
-5. Open the watchapp settings page inside the Pebble mobile companion app:
-   - Enter your **Client ID**, **Client Secret**, and **Redirect URI**.
-   - Tap **Authorize on Monzo** to open the login page in your browser.
-   - Approve the login request in your Monzo mobile app.
-   - Copy the authorization code shown on the callback page, paste it into the settings page, and tap **Connect Account**.
+1. Install and configure the **Monzo Pebble Plugin** (enter your Monzo Developer credentials and authenticate).
+2. Install the **Monzo** watchapp onto your watch.
+3. The watchapp will automatically subscribe to the plugin sources and display your accounts.
 
 ## Building from Source
 

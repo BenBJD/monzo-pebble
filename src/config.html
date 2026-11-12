@@ -3,700 +3,422 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Monzo Plugin Settings</title>
+  <title>Monzo App Settings</title>
   <style>
-      :root {
-          color-scheme: light dark;
-          --coral: #FF5B35;
-          --coral-hover: #E44825;
-          --navy: #14233C;
-          --card-bg: rgba(128, 128, 128, 0.08);
-          --card-border: rgba(128, 128, 128, 0.2);
-          --text-muted: rgba(128, 128, 128, 0.9);
-          --tab-bg: rgba(128, 128, 128, 0.12);
-          --tab-active: #FF5B35;
-      }
+    :root {
+      color-scheme: light dark;
+      --coral: #FF5B35;
+      --coral-hover: #E44825;
+      --navy: #14233C;
+      --card-bg: rgba(128, 128, 128, 0.08);
+      --card-border: rgba(128, 128, 128, 0.2);
+      --text-muted: rgba(128, 128, 128, 0.9);
+      --green: #2ecc71;
+      --amber: #f39c12;
+      --red: #e74c3c;
+    }
 
-      body {
-          font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          margin: 0;
-          padding: 24px 20px 40px;
-          color: inherit;
-      }
+    body {
+      font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 24px 20px 40px;
+      color: inherit;
+    }
 
-      .header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 20px;
-      }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
 
-      .logo-badge {
-          width: 36px;
-          height: 36px;
-          background: var(--coral);
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: 800;
-          font-size: 20px;
-      }
+    .logo-badge {
+      width: 40px;
+      height: 40px;
+      background: var(--coral);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
 
-      h1 {
-          font-size: 22px;
-          font-weight: 700;
-          margin: 0;
-      }
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
 
-      .card {
-          background: var(--card-bg);
-          border: 1px solid var(--card-border);
-          border-radius: 12px;
-          padding: 18px;
-          margin-bottom: 20px;
-      }
+    .subtitle {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
 
-      .card h2 {
-          font-size: 16px;
-          margin: 0 0 10px;
-      }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
 
-      .instructions {
-          font-size: 14px;
-          line-height: 1.5;
-          opacity: 0.88;
-          margin: 0 0 14px;
-      }
+    .card h2 {
+      font-size: 16px;
+      margin: 0 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-      .instructions ol {
-          padding-left: 20px;
-          margin: 8px 0;
-      }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
 
-      .instructions li {
-          margin-bottom: 6px;
-      }
+    .status-badge.online {
+      background: rgba(46, 204, 113, 0.15);
+      color: var(--green);
+    }
 
-      .field {
-          margin-bottom: 14px;
-      }
+    .status-badge.warning {
+      background: rgba(243, 156, 18, 0.15);
+      color: var(--amber);
+    }
 
-      label {
-          display: block;
-          font-size: 13px;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-bottom: 6px;
-          opacity: 0.8;
-      }
+    .status-badge.offline {
+      background: rgba(231, 76, 60, 0.15);
+      color: var(--red);
+    }
 
-      .field-hint {
-          font-size: 12px;
-          opacity: 0.7;
-          margin-top: 4px;
-          line-height: 1.35;
-      }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
 
-      input[type="text"], input[type="password"], select {
-          box-sizing: border-box;
-          width: 100%;
-          padding: 12px 14px;
-          font-size: 14px;
-          font-family: inherit;
-          border-radius: 8px;
-          border: 1px solid rgba(128, 128, 128, 0.4);
-          background: rgba(128, 128, 128, 0.05);
-          color: inherit;
-      }
+    .instructions {
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0.8;
+      margin: 10px 0 0;
+    }
 
-      input:focus, select:focus {
-          outline: 2px solid var(--coral);
-          border-color: transparent;
-      }
+    .field {
+      margin-bottom: 16px;
+    }
 
-      .btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          box-sizing: border-box;
-          padding: 12px 20px;
-          font-size: 15px;
-          font-weight: 600;
-          border-radius: 8px;
-          border: none;
-          cursor: pointer;
-          text-decoration: none;
-          background: var(--coral);
-          color: white;
-          transition: background 0.15s ease, opacity 0.15s ease;
-          width: 100%;
-      }
+    .field:last-child {
+      margin-bottom: 0;
+    }
 
-      .btn:hover {
-          background: var(--coral-hover);
-      }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      opacity: 0.85;
+    }
 
-      .btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-      }
+    .field-hint {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
 
-      .btn.secondary {
-          background: rgba(128, 128, 128, 0.15);
-          color: inherit;
-          margin-top: 10px;
-      }
+    select {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      border-radius: 8px;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      background: rgba(128, 128, 128, 0.05);
+      color: inherit;
+    }
 
-      .btn.secondary:hover {
-          background: rgba(128, 128, 128, 0.25);
-      }
+    select:focus {
+      outline: 2px solid var(--coral);
+      border-color: transparent;
+    }
 
-      .btn.outline {
-          background: transparent;
-          border: 1px solid var(--coral);
-          color: var(--coral);
-          margin-bottom: 12px;
-      }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: var(--coral);
+      color: white;
+      transition: background 0.15s ease, opacity 0.15s ease;
+      width: 100%;
+      margin-top: 8px;
+    }
 
-      .btn.outline:hover {
-          background: rgba(255, 91, 53, 0.08);
-      }
+    .btn:hover {
+      background: var(--coral-hover);
+    }
 
-      .link-btn {
-          background: none;
-          border: none;
-          color: var(--coral);
-          text-decoration: underline;
-          cursor: pointer;
-          padding: 0;
-          font: inherit;
-          font-size: 14px;
-      }
-
-      .status-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 13px;
-          font-weight: 600;
-          padding: 4px 10px;
-          border-radius: 20px;
-          margin-bottom: 12px;
-      }
-
-      .status-badge.online {
-          background: rgba(39, 174, 96, 0.15);
-          color: #27ae60;
-      }
-
-      .status-badge.offline {
-          background: rgba(231, 76, 60, 0.15);
-          color: #e74c3c;
-      }
-
-      .status-badge.permanent {
-          background: rgba(41, 128, 185, 0.15);
-          color: #2980b9;
-          margin-left: 6px;
-      }
-
-      .status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: currentColor;
-      }
-
-      #status-msg {
-          font-size: 14px;
-          margin-top: 10px;
-          min-height: 20px;
-          line-height: 1.4;
-          font-weight: 500;
-      }
-
-      #blocked {
-          padding: 12px 14px;
-          border-radius: 8px;
-          margin: 0 0 16px;
-          background: #fdecc8;
-          color: #5c3d00;
-          font-size: 14px;
-          line-height: 1.45;
-      }
-
-      #blocked strong {
-          display: block;
-      }
-
-      .step-box {
-          background: rgba(128, 128, 128, 0.05);
-          border: 1px solid var(--card-border);
-          border-radius: 8px;
-          padding: 12px 14px;
-          margin-bottom: 14px;
-      }
-
-      .step-header {
-          font-weight: 700;
-          font-size: 14px;
-          margin-bottom: 8px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-      }
-
-      .step-num {
-          width: 22px;
-          height: 22px;
-          background: var(--coral);
-          color: white;
-          border-radius: 50%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: 700;
-      }
-
-      .hidden {
-          display: none !important;
-      }
+    #status-msg {
+      margin-top: 14px;
+      font-size: 13px;
+      text-align: center;
+      opacity: 0.75;
+      min-height: 18px;
+    }
   </style>
 </head>
 <body>
-<div id="blocked" role="alert" class="hidden"></div>
 
-<div class="header">
-  <div class="logo-badge">M</div>
-  <div>
-    <h1>Monzo Plugin</h1>
-  </div>
-</div>
-
-<!-- Connected State Card -->
-<div id="card-connected" class="card hidden">
-  <div>
-          <span class="status-badge online">
-            <span class="status-dot"></span>
-            Connected to Monzo
-          </span>
-    <span id="conn-type-badge" class="status-badge permanent">OAuth 2.0</span>
-  </div>
-  <h2>Account Overview</h2>
-  <div class="field">
-    <label for="account-select">First Account</label>
-    <select id="account-select"></select>
-  </div>
-  <p id="account-details" class="instructions"></p>
-  <button id="btn-unlink" type="button" class="btn secondary">Disconnect Account</button>
-</div>
-
-<!-- Setup Card -->
-<div id="card-setup" class="card">
-  <div class="status-badge offline">
-    <span class="status-dot"></span>
-    Not Connected
-  </div>
-  <h2>Connect Your Monzo Account</h2>
-
-  <!-- Mode 1: OAuth Flow -->
-  <div id="pane-oauth">
-    <div class="instructions">
-      Connect via your personal Monzo OAuth client
-    </div>
-
-    <div class="step-box">
-      <div class="step-header">
-        <span class="step-num">1</span>
-        <span>Your OAuth Client Credentials</span>
-      </div>
-      <p class="field-hint" style="margin-bottom: 10px;">
-        Create a <strong>Confidential</strong> client at
-        <button id="btn-open-dev-portal" type="button" class="link-btn">developers.monzo.com</button>
-        .
-      </p>
-
-      <div class="field">
-        <label for="oauth-client-id">Client ID</label>
-        <input id="oauth-client-id" type="text" placeholder="oauthclient_00000..." autocomplete="off"
-               spellcheck="false">
-      </div>
-      <div class="field">
-        <label for="oauth-client-secret">Client Secret</label>
-        <input id="oauth-client-secret" type="password" placeholder="mnzpub.00000..." autocomplete="off"
-               spellcheck="false">
-      </div>
-      <div class="field">
-        <label for="oauth-redirect-uri">Redirect URI</label>
-        <input id="oauth-redirect-uri" type="text" autocomplete="off" spellcheck="false"
-               value="https://benbjd.github.io/monzo-pebble/callback.html">
-        <div class="field-hint">Leave on https://benbjd.github.io/monzo-pebble/callback.html to use included. Must be
-          exactly what you entered into Monzo
-        </div>
-        <button type="button" class="btn outline"
-                onclick="(() => document.getElementById('oauth-redirect-uri').value = 'https://benbjd.github.io/monzo-pebble/callback.html')()">
-          Reset URI to default
-        </button>
-      </div>
-
-      <button id="btn-open-auth" type="button" class="btn outline">Authorize on Monzo ↗</button>
-    </div>
-
-    <div class="step-box">
-      <div class="step-header">
-        <span class="step-num">2</span>
-        <span>Enter Authorization Code</span>
-      </div>
-      <p class="field-hint" style="margin-bottom: 10px;">
-        After clicking the login link in your email, your browser redirect page will display an Authorization Code.<br>
-        <strong>Note:</strong> Open your Monzo mobile app and approve the login notification if prompted.
-      </p>
-
-      <div class="field">
-        <label for="oauth-code">Authorization Code</label>
-        <input id="oauth-code" type="text" placeholder="oauthcode_00000..." autocomplete="off" spellcheck="false">
-      </div>
-
-      <button id="btn-connect-oauth" type="button" class="btn">Connect & Save Credentials</button>
-    </div>
-
-    <div id="banner-pending" class="step-box hidden" style="border-color: #f39c12; background: rgba(243, 156, 18, 0.1); margin-top: 14px;">
-      <div class="step-header" style="color: #f39c12;">
-        <span>⚠️ Approval Required in Monzo App</span>
-      </div>
-      <p class="instructions" style="margin: 8px 0 12px; font-size: 13px;">
-        Your credentials have been securely saved, but Monzo requires you to approve this connection. Please open the <strong>Monzo app</strong> on your phone and tap <strong>Approve</strong>, then tap the button below.
-      </p>
-      <button id="btn-check-status" type="button" class="btn" style="background: #f39c12;">Check Approval Status</button>
+  <div class="header">
+    <div class="logo-badge">M</div>
+    <div>
+      <h1>Monzo App Settings</h1>
+      <div class="subtitle">Watchapp Preferences</div>
     </div>
   </div>
-</div>
 
-  <!-- Display Settings Card -->
+  <!-- Plugin Status Card -->
   <div class="card">
-    <h2>Display Settings</h2>
+    <h2>
+      <span>Plugin Status</span>
+      <span id="plugin-badge" class="status-badge warning">
+        <span class="status-dot"></span>
+        <span id="plugin-status-text">Checking…</span>
+      </span>
+    </h2>
+    <div id="plugin-description" class="instructions">
+      Connecting to background Monzo plugin…
+    </div>
+  </div>
+
+  <!-- Theme Settings Card -->
+  <div class="card">
+    <h2>Display Theme</h2>
     <div class="field">
-      <label for="theme-select">Watch Theme</label>
+      <label for="theme-select">Watchface Style</label>
       <select id="theme-select">
         <option value="light">Light (Classic Pebble)</option>
         <option value="dark">Dark (Monzo Navy)</option>
       </select>
+      <div class="field-hint">
+        Applied across all watch screens and dialogs.
+      </div>
     </div>
-    <button id="btn-save-theme" type="button" class="btn secondary">Save Theme</button>
   </div>
 
-  <div id="status-msg">Starting Monzo plugin…</div>
+  <!-- First Account Card -->
+  <div class="card">
+    <h2>First Account</h2>
+    <div class="field">
+      <label for="first-account-select">Primary Account on Wrist</label>
+      <select id="first-account-select">
+        <option value="">Default (First Available)</option>
+      </select>
+      <div class="field-hint">
+        This account is shown when opening the watchapp. You can switch between all accounts using the Up/Down buttons.
+      </div>
+    </div>
+  </div>
+
+  <button id="btn-save" type="button" class="btn">Save Settings</button>
+  <div id="status-msg"></div>
 
   <script>
-    var $ = function (id) {
-      return document.getElementById(id);
-    };
+    var $ = function (id) { return document.getElementById(id); };
 
     function say(text) {
       $('status-msg').textContent = text;
     }
 
-    function send(message) {
-      return Pebble.sendMessage('plugin', message);
+    var availableAccounts = [];
+    var selectedFirstAccountId = '';
+
+    function getParam(name) {
+      try {
+        var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+        return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+      } catch (e) {
+        return null;
+      }
     }
 
-    function showBlocked(blocked) {
-      var host = blocked.host;
-      var banner = $('blocked');
-      banner.innerHTML = '<strong>Monzo doesn\'t have permission to connect to ' + host + '.</strong>' +
-        'Go back to the app page and enable "Connect to ' + host + '" under Permissions.';
-      banner.classList.remove('hidden');
+    function initFromLocalOrQuery() {
+      // 1. Theme
+      var savedTheme = getParam('theme') || localStorage.getItem('monzo_theme') || 'light';
+      $('theme-select').value = (savedTheme === 'dark') ? 'dark' : 'light';
+
+      // 2. First Account ID
+      selectedFirstAccountId = getParam('firstAccount') || localStorage.getItem('monzo_first_account') || '';
+
+      // 3. Status from Query if present
+      var queryConfigured = getParam('configured');
+      var queryStatus = getParam('status');
+      var queryAccounts = getParam('accounts');
+
+      if (queryAccounts) {
+        try {
+          var accs = JSON.parse(queryAccounts);
+          if (Array.isArray(accs)) {
+            renderAccounts(accs, selectedFirstAccountId);
+          }
+        } catch (e) {}
+      }
+
+      if (queryConfigured !== null) {
+        updatePluginStatus(queryConfigured === '1', queryStatus || 'Ready');
+      }
+    }
+
+    function updatePluginStatus(isConfigured, statusText) {
+      var badge = $('plugin-badge');
+      var statusSpan = $('plugin-status-text');
+      var desc = $('plugin-description');
+
+      badge.className = 'status-badge';
+      if (isConfigured) {
+        badge.classList.add('online');
+        statusSpan.textContent = 'Connected';
+        desc.innerHTML = 'The Monzo Pebble Plugin is active and serving real-time balance and pot data to your watch.';
+      } else if (statusText === 'Sign in' || statusText === 'Setup') {
+        badge.classList.add('warning');
+        statusSpan.textContent = 'Setup Required';
+        desc.innerHTML = 'The Monzo Pebble Plugin is not connected to your Monzo account. Please open the <strong>Monzo Plugin</strong> settings in the Pebble app to authorize your account.';
+      } else if (statusText === 'No plugin API') {
+        badge.classList.add('offline');
+        statusSpan.textContent = 'API Unavailable';
+        desc.innerHTML = 'Pebble Plugins API is not detected on your device. Please ensure you are running a supported Pebble app version with Plugins enabled.';
+      } else {
+        badge.classList.add('warning');
+        statusSpan.textContent = statusText || 'Not Connected';
+        desc.innerHTML = 'Monzo data is currently unavailable. Please verify your <strong>Monzo Pebble Plugin</strong> settings.';
+      }
     }
 
     function renderAccounts(accounts, selectedId) {
-      var select = $('account-select');
+      availableAccounts = accounts || [];
+      var select = $('first-account-select');
       select.innerHTML = '';
-      (accounts || []).forEach(function (acc) {
+
+      var defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.textContent = 'Default (First Available)';
+      select.appendChild(defaultOpt);
+
+      if (availableAccounts.length === 0) {
+        var noneOpt = document.createElement('option');
+        noneOpt.value = '';
+        noneOpt.disabled = true;
+        noneOpt.textContent = 'No accounts loaded (connect plugin first)';
+        select.appendChild(noneOpt);
+        return;
+      }
+
+      availableAccounts.forEach(function (acc) {
         var opt = document.createElement('option');
         opt.value = acc.id;
-        opt.textContent = (acc.description || 'Current Account') + ' (' + (acc.type || 'account') + ')';
-        if (acc.id === selectedId) opt.selected = true;
+        var label = acc.name || 'Account';
+        if (acc.balance) label += ' (' + acc.balance + ')';
+        else if (acc.type) label += ' (' + acc.type + ')';
+        opt.textContent = label;
+        if (acc.id === selectedId) {
+          opt.selected = true;
+        }
         select.appendChild(opt);
       });
     }
 
-    function showState(data) {
-      console.log(data);
-      if (data && data.configured) {
-        $('card-connected').classList.remove('hidden');
-        $('card-setup').classList.add('hidden');
-        $('banner-pending').classList.add('hidden');
-        renderAccounts(data.accounts, data.selectedAccountId);
-
-        var details = 'Account ID: ' + (data.selectedAccountId || 'default');
-        if (typeof data.potsCount === 'number') {
-          details += '<br>Savings Pots found: ' + data.potsCount;
-        }
-        $('account-details').innerHTML = details;
-        say('Plugin is connected and serving Monzo data.');
-      } else if (data && data.pendingApproval) {
-        $('card-connected').classList.add('hidden');
-        $('card-setup').classList.remove('hidden');
-        $('banner-pending').classList.remove('hidden');
-        say('Credentials saved! Open your Monzo app and tap Approve, then check status.');
-        if (data.clientId) $('oauth-client-id').value = data.clientId;
-        if (data.redirectUri) $('oauth-redirect-uri').value = data.redirectUri;
-      } else {
-        $('card-connected').classList.add('hidden');
-        $('card-setup').classList.remove('hidden');
-        $('banner-pending').classList.add('hidden');
-
-        if (data && data.expired) {
-          say('Your Monzo connection has expired and not refreshed. Please re-authorize.');
-        } else {
-          say('Please connect your Monzo account.');
-        }
-
-        if (data && data.clientId) {
-          $('oauth-client-id').value = data.clientId;
-        }
-        if (data && data.redirectUri) {
-          $('oauth-redirect-uri').value = data.redirectUri;
-        }
-      }
-    }
-
-    // Open Monzo Developer Portal
-    function openExternal(url) {
-      if (typeof Pebble !== 'undefined' && Pebble.openUrl) {
-        Pebble.openUrl(url);
-      } else {
-        window.open(url, '_blank');
-      }
-    }
-
-    $('btn-open-dev-portal').onclick = function () {
-      openExternal('https://developers.monzo.com');
-    };
-
-    // Save and restore draft OAuth fields in localStorage
-    function saveDraftOAuth() {
-      try {
-        localStorage.setItem('monzo_draft_client_id', $('oauth-client-id').value.trim());
-        localStorage.setItem('monzo_draft_client_secret', $('oauth-client-secret').value.trim());
-        localStorage.setItem('monzo_draft_redirect_uri', $('oauth-redirect-uri').value.trim());
-      } catch (e) {
-      }
-    }
-
-    function restoreDraftOAuth() {
-      try {
-        var cid = localStorage.getItem('monzo_draft_client_id');
-        var csec = localStorage.getItem('monzo_draft_client_secret');
-        var ruri = localStorage.getItem('monzo_draft_redirect_uri');
-        if (cid && !$('oauth-client-id').value) $('oauth-client-id').value = cid;
-        if (csec && !$('oauth-client-secret').value) $('oauth-client-secret').value = csec;
-        if (ruri && !$('oauth-redirect-uri').value) $('oauth-redirect-uri').value = ruri;
-      } catch (e) {
-      }
-    }
-
-    $('oauth-client-id').oninput = saveDraftOAuth;
-    $('oauth-client-secret').oninput = saveDraftOAuth;
-    $('oauth-redirect-uri').oninput = saveDraftOAuth;
-
-    // Step 1: Open Monzo Authorization URL
-    $('btn-open-auth').onclick = function () {
-      var clientId = $('oauth-client-id').value.trim();
-      var redirectUri = $('oauth-redirect-uri').value.trim();
-
-      if (!clientId) {
-        say('Please enter your Monzo Client ID.');
-        $('oauth-client-id').focus();
-        return;
-      }
-      if (!redirectUri) {
-        say('Please enter your Redirect URI.');
-        $('oauth-redirect-uri').focus();
-        return;
-      }
-
-      saveDraftOAuth();
-      var state = Math.random().toString(36).substring(2, 12);
-      try {
-        localStorage.setItem('monzo_oauth_state', state);
-      } catch (e) {
-      }
-
-      var authUrl = 'https://auth.monzo.com/?' +
-        'client_id=' + encodeURIComponent(clientId) +
-        '&redirect_uri=' + encodeURIComponent(redirectUri) +
-        '&response_type=code' +
-        '&state=' + encodeURIComponent(state);
-
-      say('Opening Monzo authorization page in browser…');
-      openExternal(authUrl);
-    };
-
-    // Step 2: Exchange Authorization Code for permanent tokens
-    $('btn-connect-oauth').onclick = async function () {
-      var clientId = $('oauth-client-id').value.trim();
-      var clientSecret = $('oauth-client-secret').value.trim();
-      var redirectUri = $('oauth-redirect-uri').value.trim();
-      var code = $('oauth-code').value.trim();
-
-      if (!clientId) {
-        say('Please enter your Client ID.');
-        $('oauth-client-id').focus();
-        return;
-      }
-      if (!clientSecret) {
-        say('Please enter your Client Secret.');
-        $('oauth-client-secret').focus();
-        return;
-      }
-      if (!redirectUri) {
-        say('Please enter your Redirect URI.');
-        $('oauth-redirect-uri').focus();
-        return;
-      }
-      if (!code) {
-        say('Please paste the Authorization Code from your redirect page.');
-        $('oauth-code').focus();
-        return;
-      }
-
-      saveDraftOAuth();
-      say('Exchanging code with Monzo API…');
-      $('btn-connect-oauth').disabled = true;
+    async function savePreferences() {
+      var themeVal = $('theme-select').value;
+      var firstAccVal = $('first-account-select').value;
 
       try {
-        var reply = await send({
-          type: 'oauth_exchange',
-          clientId: clientId,
-          clientSecret: clientSecret,
-          redirectUri: redirectUri,
-          code: code
-        });
-        $('btn-connect-oauth').disabled = false;
+        localStorage.setItem('monzo_theme', themeVal);
+        localStorage.setItem('monzo_first_account', firstAccVal);
+      } catch (e) {}
 
-        if (reply.error) {
-          say('OAuth error: ' + reply.error);
-        } else {
-          $('oauth-code').value = '';
-          showState(reply);
-          if (reply.pendingApproval) {
-            pollApproval(6);
-          }
-        }
-      } catch (err) {
-        $('btn-connect-oauth').disabled = false;
-        say('Failed to exchange OAuth token: ' + err);
-      }
-    };
-
-    var pollTimer = null;
-    async function checkApproval() {
-      say('Checking approval status…');
-      try {
-        var status = await send({type: 'status'});
-        showState(status);
-        if (status.configured && pollTimer) {
-          clearTimeout(pollTimer);
-        }
-      } catch (e) {
-        say('Could not check status: ' + e);
-      }
-    }
-
-    function pollApproval(remaining) {
-      if (remaining <= 0) return;
-      if (pollTimer) clearTimeout(pollTimer);
-      pollTimer = setTimeout(async function () {
-        try {
-          var status = await send({type: 'status'});
-          if (status.configured) {
-            showState(status);
-          } else if (remaining > 1) {
-            pollApproval(remaining - 1);
-          }
-        } catch (e) {}
-      }, 3000);
-    }
-
-    $('btn-check-status').onclick = checkApproval;
-
-    $('account-select').onchange = async function () {
-      var accId = this.value;
-      say('Updating first account…');
-      var reply = await send({type: 'selectAccount', accountId: accId});
-      if (reply.error) say('Error: ' + reply.error);
-      else say('First account updated.');
-    };
-
-    $('btn-unlink').onclick = async function () {
-      say('Disconnecting…');
-      var reply = await send({type: 'unlink'});
-      showState({configured: false});
-    };
-
-    function initTheme() {
-      var savedTheme = 'light';
-      try {
-        savedTheme = localStorage.getItem('monzo_theme') || 'light';
-      } catch (e) {
-      }
-      $('theme-select').value = savedTheme;
-    }
-
-    $('theme-select').onchange = async function () {
-      var val = this.value;
-      try {
-        localStorage.setItem('monzo_theme', val);
-      } catch (e) {
-      }
-      say('Updating watch theme…');
-      try {
-        await send({type: 'setTheme', theme: val});
-        say('Watch theme set to ' + (val === 'light' ? 'Light' : 'Dark') + '.');
-      } catch (e) {
-      }
-    };
-
-    $('btn-save-theme').onclick = async function () {
-      var val = $('theme-select').value;
-      try {
-        localStorage.setItem('monzo_theme', val);
-      } catch (e) {
-      }
       say('Saving preferences…');
-      try {
-        await send({type: 'setTheme', theme: val});
-      } catch (e) {
+
+      if (typeof Pebble !== 'undefined' && Pebble.sendMessage) {
+        try {
+          await Pebble.sendMessage('pkjs', {
+            type: 'setAppConfig',
+            theme: themeVal,
+            firstAccountId: firstAccVal
+          });
+        } catch (e) {}
       }
-      say('Theme preference applied!');
-      if (typeof Pebble !== 'undefined' && Pebble.openUrl) {
-        document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify({theme: val}));
-      }
+
+      say('Preferences saved!');
+
+      var resultPayload = {
+        theme: themeVal,
+        firstAccountId: firstAccVal
+      };
+
+      setTimeout(function () {
+        if (typeof Pebble !== 'undefined' && Pebble.openUrl) {
+          document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(resultPayload));
+        } else {
+          document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(resultPayload));
+        }
+      }, 250);
+    }
+
+    $('btn-save').onclick = savePreferences;
+
+    $('theme-select').onchange = function () {
+      try { localStorage.setItem('monzo_theme', this.value); } catch (e) {}
     };
 
-    initTheme();
-    restoreDraftOAuth();
+    $('first-account-select').onchange = function () {
+      selectedFirstAccountId = this.value;
+      try { localStorage.setItem('monzo_first_account', this.value); } catch (e) {}
+    };
 
-    Pebble.addEventListener('ready', async function (event) {
-      if (event.target !== 'plugin') return;
+    initFromLocalOrQuery();
 
-      send({type: 'reach'}).then(function (res) {
-        if (res && res.blocked) showBlocked(res.blocked);
-      }).catch(function () {
+    if (typeof Pebble !== 'undefined' && Pebble.addEventListener) {
+      Pebble.addEventListener('ready', async function (event) {
+        console.log('[AppConfig] Pebble ready event:', event && event.target);
+        if (Pebble.sendMessage) {
+          try {
+            var reply = await Pebble.sendMessage('pkjs', { type: 'getAppConfig' });
+            if (reply) {
+              if (reply.theme) {
+                $('theme-select').value = reply.theme;
+              }
+              if (reply.firstAccountId !== undefined) {
+                selectedFirstAccountId = reply.firstAccountId;
+              }
+              renderAccounts(reply.accounts, selectedFirstAccountId);
+              updatePluginStatus(reply.isConfigured, reply.pluginStatus);
+            }
+          } catch (err) {
+            console.warn('[AppConfig] getAppConfig error:', err);
+          }
+        }
       });
-
-      try {
-        var status = await send({type: 'status'});
-        showState(status);
-      } catch (e) {
-        say('Could not read plugin status: ' + e);
-      }
-    });
+    }
   </script>
 </body>
 </html>

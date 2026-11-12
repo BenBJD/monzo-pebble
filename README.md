@@ -4,9 +4,7 @@ A Pebble watchapp that connects to the [Monzo Pebble Plugin](https://github.com/
 
 ## Features
 
-- **Multi-Account Support**: Switch between up to 4 Monzo accounts (Personal, Joint, Flex, and Business).
 - **At-a-Glance Balances**: View current account balance, today's spend, and total balance with pots.
-- **Pot Breakdown**: Open the details view to inspect individual savings pots and their balances.
 - **Pebble Plugin Integration**: Subscribes directly to `finance/*` data sources (`finance/account`, `finance/pot`, `finance/configured`) provided by the Monzo Pebble Plugin.
 - **Theme Options**: Supports Light and Dark modes across color and monochrome screens.
 - **Cross-Platform**: Compatible with `aplite`, `basalt`, `chalk`, `diorite`, `emery`, `flint`, and `gabbro`.

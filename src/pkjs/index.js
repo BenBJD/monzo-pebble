@@ -16,10 +16,31 @@ var currentTheme = (function () {
   try { return localStorage.getItem('monzo_theme') || 'light'; } catch (e) { return 'light'; }
 })();
 
+var currentFirstAccount = (function () {
+  try { return localStorage.getItem('monzo_first_account') || ''; } catch (e) { return ''; }
+})();
+
+var isPluginConfigured = false;
+
 var latestData = {
   KEY_ACCOUNT_COUNT: 0,
   KEY_STATUS: 'Ready'
 };
+
+function getAccountSummaries() {
+  return cachedAccounts.map(function (acc) {
+    var p = acc.properties || {};
+    var name = (p.name && p.name.shortText && p.name.shortText.text) || acc.instanceId;
+    var type = (p.account_type && p.account_type.shortText && p.account_type.shortText.text) || '';
+    var bal = (p.balance && p.balance.shortText && p.balance.shortText.text) || '';
+    return {
+      id: acc.instanceId,
+      name: name,
+      type: type,
+      balance: bal
+    };
+  });
+}
 
 function pushToWatch() {
   var themeVal = (currentTheme === 'dark') ? 1 : 0;
@@ -49,7 +70,23 @@ function pushToWatch() {
     return;
   }
 
-  var num = Math.min(cachedAccounts.length, 4);
+  // Sort with user-selected first account at top if present
+  var sortedAccounts = cachedAccounts.slice();
+  if (currentFirstAccount) {
+    var matchIdx = -1;
+    for (var k = 0; k < sortedAccounts.length; k++) {
+      if (sortedAccounts[k].instanceId === currentFirstAccount) {
+        matchIdx = k;
+        break;
+      }
+    }
+    if (matchIdx > 0) {
+      var matched = sortedAccounts.splice(matchIdx, 1)[0];
+      sortedAccounts.unshift(matched);
+    }
+  }
+
+  var num = Math.min(sortedAccounts.length, 4);
   var payload = {
     KEY_THEME: themeVal,
     KEY_ACCOUNT_COUNT: num,
@@ -57,7 +94,7 @@ function pushToWatch() {
   };
 
   for (var i = 0; i < num; i++) {
-    var acc = cachedAccounts[i];
+    var acc = sortedAccounts[i];
     var accId = acc.instanceId;
     var p = acc.properties || {};
 
@@ -116,6 +153,7 @@ function initSubscriptions() {
         var inst = envelope.instances && envelope.instances[0];
         var isConfigured = inst && inst.properties && inst.properties.configured &&
                            inst.properties.configured.boolean && inst.properties.configured.boolean.value;
+        isPluginConfigured = !!isConfigured;
         if (!isConfigured) {
           cachedAccounts = [];
           latestData.KEY_STATUS = 'Setup';
@@ -123,6 +161,7 @@ function initSubscriptions() {
         }
       },
       onError: function (err) {
+        isPluginConfigured = false;
         console.warn('[PKJS] configured error:', JSON.stringify(err));
       }
     });
@@ -137,6 +176,9 @@ function initSubscriptions() {
       item: 'account',
       onData: function (envelope) {
         cachedAccounts = envelope.instances || [];
+        if (cachedAccounts.length > 0) {
+          isPluginConfigured = true;
+        }
         latestData.KEY_STATUS = 'Updated';
         pushToWatch();
       },
@@ -144,6 +186,7 @@ function initSubscriptions() {
         console.warn('[PKJS] Account subscription error:', JSON.stringify(err));
         if (err && err.code === 'AUTH_REQUIRED') {
           cachedAccounts = [];
+          isPluginConfigured = false;
           latestData.KEY_STATUS = 'Sign in';
         } else {
           latestData.KEY_STATUS = 'Offline';
@@ -185,6 +228,35 @@ Pebble.addEventListener('appmessage', function (e) {
   }
 });
 
+Pebble.addEventListener('configmessage', function (e) {
+  var msg = (e && e.data) || {};
+  console.log('[PKJS] Received configmessage:', JSON.stringify(msg));
+  if (msg.type === 'getAppConfig') {
+    if (typeof e.respond === 'function') {
+      e.respond({
+        theme: currentTheme,
+        firstAccountId: currentFirstAccount,
+        isConfigured: isPluginConfigured,
+        pluginStatus: latestData.KEY_STATUS || 'Ready',
+        accounts: getAccountSummaries()
+      });
+    }
+  } else if (msg.type === 'setAppConfig') {
+    if (msg.theme) {
+      currentTheme = msg.theme;
+      try { localStorage.setItem('monzo_theme', currentTheme); } catch (err) {}
+    }
+    if (msg.firstAccountId !== undefined) {
+      currentFirstAccount = msg.firstAccountId;
+      try { localStorage.setItem('monzo_first_account', currentFirstAccount); } catch (err) {}
+    }
+    pushToWatch();
+    if (typeof e.respond === 'function') {
+      e.respond({ ok: true });
+    }
+  }
+});
+
 Pebble.addEventListener('webviewclosed', function (e) {
   console.log('[PKJS] webviewclosed event:', e.response);
   if (!e.response) return;
@@ -193,8 +265,12 @@ Pebble.addEventListener('webviewclosed', function (e) {
     if (config.theme) {
       currentTheme = config.theme;
       try { localStorage.setItem('monzo_theme', currentTheme); } catch (err) {}
-      pushToWatch();
     }
+    if (config.firstAccountId !== undefined) {
+      currentFirstAccount = config.firstAccountId;
+      try { localStorage.setItem('monzo_first_account', currentFirstAccount); } catch (err) {}
+    }
+    pushToWatch();
   } catch (err) {
     console.warn('[PKJS] webviewclosed parse error:', err);
   }

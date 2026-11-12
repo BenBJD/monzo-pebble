@@ -24,18 +24,7 @@
     "watchapp": {
       "watchface": false
     },
-    "usesPermissions": [
-      {
-        "name": "Internet",
-        "parameters": {
-          "domains": [
-            "api.monzo.com"
-          ]
-        },
-        "reason": "To fetch Monzo account balances, pots, and transactions",
-        "required": true
-      }
-    ],
+    "usesPermissions": [],
     "configPage": "src/config.html",
     "messageKeys": [
       "KEY_THEME",

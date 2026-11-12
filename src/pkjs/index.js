@@ -280,15 +280,22 @@ Pebble.addEventListener('showConfiguration', function (e) {
 
 Pebble.addEventListener('configmessage', function (e) {
   var msg = (e && e.data) || (e && e.message) || (e && e.payload) || e || {};
+  if (typeof msg === 'string') {
+    try { msg = JSON.parse(msg); } catch (err) {}
+  }
   console.log('[PKJS] Received configmessage:', JSON.stringify(msg));
+
+  var accSummaries = getAccountSummaries();
+  var configured = (isPluginConfigured || accSummaries.length > 0);
+  var statusText = latestData.KEY_STATUS || (configured ? 'Updated' : 'Ready');
 
   var respondFn = (e && typeof e.respond === 'function') ? e.respond : null;
   var responseData = {
     theme: currentTheme,
     firstAccountId: currentFirstAccount,
-    isConfigured: (isPluginConfigured || cachedAccounts.length > 0),
-    pluginStatus: latestData.KEY_STATUS || 'Ready',
-    accounts: getAccountSummaries()
+    isConfigured: configured,
+    pluginStatus: statusText,
+    accounts: accSummaries
   };
 
   if (msg.type === 'setAppConfig') {

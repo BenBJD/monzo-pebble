@@ -270,32 +270,42 @@
       // 2. First Account ID
       selectedFirstAccountId = getParam('firstAccount') || localStorage.getItem('monzo_first_account') || '';
 
-      // 3. Status from Query if present
-      var queryConfigured = getParam('configured');
-      var queryStatus = getParam('status');
+      // 3. Accounts from Query or LocalStorage
       var queryAccounts = getParam('accounts');
-
+      var accs = null;
       if (queryAccounts) {
-        try {
-          var accs = JSON.parse(queryAccounts);
-          if (Array.isArray(accs)) {
-            renderAccounts(accs, selectedFirstAccountId);
-          }
-        } catch (e) {}
+        try { accs = JSON.parse(queryAccounts); } catch (e) {}
+      }
+      if (!accs || !accs.length) {
+        try { accs = JSON.parse(localStorage.getItem('monzo_cached_accounts') || '[]'); } catch (e) {}
       }
 
+      if (Array.isArray(accs) && accs.length > 0) {
+        renderAccounts(accs, selectedFirstAccountId);
+      }
+
+      // 4. Status from Query or LocalStorage
+      var queryConfigured = getParam('configured');
+      var queryStatus = getParam('status');
+      var localConfigured = localStorage.getItem('monzo_plugin_configured');
+      var localStatus = localStorage.getItem('monzo_plugin_status');
+
       if (queryConfigured !== null) {
-        updatePluginStatus(queryConfigured === '1', queryStatus || 'Ready');
+        updatePluginStatus(queryConfigured === '1', queryStatus || 'Ready', accs ? accs.length : 0);
+      } else if (localConfigured !== null || (accs && accs.length > 0)) {
+        updatePluginStatus(localConfigured === '1' || (accs && accs.length > 0), localStatus || 'Ready', accs ? accs.length : 0);
       }
     }
 
-    function updatePluginStatus(isConfigured, statusText) {
+    function updatePluginStatus(isConfigured, statusText, accountsCount) {
       var badge = $('plugin-badge');
       var statusSpan = $('plugin-status-text');
       var desc = $('plugin-description');
 
+      var effectiveConnected = !!isConfigured || (typeof accountsCount === 'number' && accountsCount > 0);
+
       badge.className = 'status-badge';
-      if (isConfigured) {
+      if (effectiveConnected) {
         badge.classList.add('online');
         statusSpan.textContent = 'Connected';
         desc.innerHTML = 'The Monzo Pebble Plugin is active and serving real-time balance and pot data to your watch.';
@@ -309,8 +319,8 @@
         desc.innerHTML = 'Pebble Plugins API is not detected on your device. Please ensure you are running a supported Pebble app version with Plugins enabled.';
       } else {
         badge.classList.add('warning');
-        statusSpan.textContent = statusText || 'Not Connected';
-        desc.innerHTML = 'Monzo data is currently unavailable. Please verify your <strong>Monzo Pebble Plugin</strong> settings.';
+        statusSpan.textContent = statusText || 'Setup Required';
+        desc.innerHTML = 'Monzo data is currently unavailable. Please open the <strong>Monzo Plugin</strong> settings in the Pebble app to configure your account.';
       }
     }
 
@@ -347,6 +357,24 @@
       });
     }
 
+    function applyConfig(reply) {
+      if (!reply) return;
+      if (reply.theme) {
+        $('theme-select').value = reply.theme;
+        try { localStorage.setItem('monzo_theme', reply.theme); } catch (e) {}
+      }
+      if (reply.firstAccountId !== undefined) {
+        selectedFirstAccountId = reply.firstAccountId;
+        try { localStorage.setItem('monzo_first_account', reply.firstAccountId); } catch (e) {}
+      }
+      if (reply.accounts && Array.isArray(reply.accounts)) {
+        renderAccounts(reply.accounts, selectedFirstAccountId);
+        try { localStorage.setItem('monzo_cached_accounts', JSON.stringify(reply.accounts)); } catch (e) {}
+      }
+      var count = (reply.accounts && reply.accounts.length) || 0;
+      updatePluginStatus(reply.isConfigured, reply.pluginStatus, count);
+    }
+
     async function savePreferences() {
       var themeVal = $('theme-select').value;
       var firstAccVal = $('first-account-select').value;
@@ -376,12 +404,8 @@
       };
 
       setTimeout(function () {
-        if (typeof Pebble !== 'undefined' && Pebble.openUrl) {
-          document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(resultPayload));
-        } else {
-          document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(resultPayload));
-        }
-      }, 250);
+        document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(resultPayload));
+      }, 200);
     }
 
     $('btn-save').onclick = savePreferences;
@@ -397,28 +421,59 @@
 
     initFromLocalOrQuery();
 
-    if (typeof Pebble !== 'undefined' && Pebble.addEventListener) {
-      Pebble.addEventListener('ready', async function (event) {
-        console.log('[AppConfig] Pebble ready event:', event && event.target);
-        if (Pebble.sendMessage) {
-          try {
-            var reply = await Pebble.sendMessage('pkjs', { type: 'getAppConfig' });
-            if (reply) {
-              if (reply.theme) {
-                $('theme-select').value = reply.theme;
-              }
-              if (reply.firstAccountId !== undefined) {
-                selectedFirstAccountId = reply.firstAccountId;
-              }
-              renderAccounts(reply.accounts, selectedFirstAccountId);
-              updatePluginStatus(reply.isConfigured, reply.pluginStatus);
-            }
-          } catch (err) {
-            console.warn('[AppConfig] getAppConfig error:', err);
+    async function requestFromPkjs() {
+      if (typeof Pebble !== 'undefined' && typeof Pebble.sendMessage === 'function') {
+        try {
+          var replyPromise = Pebble.sendMessage('pkjs', { type: 'getAppConfig' });
+          var timeoutPromise = new Promise(function (_, reject) {
+            setTimeout(function () { reject(new Error('timeout')); }, 1200);
+          });
+          var reply = await Promise.race([replyPromise, timeoutPromise]);
+          if (reply) {
+            applyConfig(reply);
+            return true;
           }
+        } catch (err) {
+          console.warn('[AppConfig] sendMessage error or timeout:', err);
         }
+      }
+      return false;
+    }
+
+    // 1. Listen for Pebble sendConfigMessage
+    if (typeof Pebble !== 'undefined' && Pebble.addEventListener) {
+      Pebble.addEventListener('message', function (event) {
+        console.log('[AppConfig] Pebble message event:', event);
+        var data = (event && event.data) || (event && event.message) || event;
+        applyConfig(data);
+      });
+
+      Pebble.addEventListener('ready', function (event) {
+        console.log('[AppConfig] Pebble ready event:', event && event.target);
+        requestFromPkjs();
       });
     }
+
+    // 2. Listen on window for postMessage
+    window.addEventListener('message', function (event) {
+      var data = (event && event.data) || event;
+      if (data && (data.accounts || data.pluginStatus !== undefined || data.isConfigured !== undefined)) {
+        applyConfig(data);
+      }
+    });
+
+    // 3. Attempt immediate fetch without waiting for ready
+    requestFromPkjs();
+
+    // 4. Ensure status never stays indefinitely on Checking…
+    setTimeout(function () {
+      if ($('plugin-status-text').textContent === 'Checking…') {
+        initFromLocalOrQuery();
+        if ($('plugin-status-text').textContent === 'Checking…') {
+          updatePluginStatus(false, 'Setup Required');
+        }
+      }
+    }, 1500);
   </script>
 </body>
 </html>

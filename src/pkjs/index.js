@@ -42,6 +42,33 @@ function getAccountSummaries() {
   });
 }
 
+function sendConfigData() {
+  var accSummaries = getAccountSummaries();
+  var configured = (isPluginConfigured || accSummaries.length > 0);
+  var statusText = latestData.KEY_STATUS || (configured ? 'Updated' : 'Ready');
+  var payload = {
+    theme: currentTheme,
+    firstAccountId: currentFirstAccount,
+    isConfigured: configured,
+    pluginStatus: statusText,
+    accounts: accSummaries
+  };
+
+  try {
+    localStorage.setItem('monzo_cached_accounts', JSON.stringify(accSummaries));
+    localStorage.setItem('monzo_plugin_configured', configured ? '1' : '0');
+    localStorage.setItem('monzo_plugin_status', statusText);
+  } catch (e) {}
+
+  if (typeof Pebble !== 'undefined' && typeof Pebble.sendConfigMessage === 'function') {
+    try {
+      Pebble.sendConfigMessage(payload);
+    } catch (e) {
+      console.warn('[PKJS] sendConfigMessage error:', e);
+    }
+  }
+}
+
 function pushToWatch() {
   var themeVal = (currentTheme === 'dark') ? 1 : 0;
   if (cachedAccounts.length === 0) {
@@ -159,10 +186,12 @@ function initSubscriptions() {
           latestData.KEY_STATUS = 'Setup';
           pushToWatch();
         }
+        sendConfigData();
       },
       onError: function (err) {
         isPluginConfigured = false;
         console.warn('[PKJS] configured error:', JSON.stringify(err));
+        sendConfigData();
       }
     });
   } catch (e) {
@@ -181,6 +210,7 @@ function initSubscriptions() {
         }
         latestData.KEY_STATUS = 'Updated';
         pushToWatch();
+        sendConfigData();
       },
       onError: function (err) {
         console.warn('[PKJS] Account subscription error:', JSON.stringify(err));
@@ -192,6 +222,7 @@ function initSubscriptions() {
           latestData.KEY_STATUS = 'Offline';
         }
         pushToWatch();
+        sendConfigData();
       }
     });
   } catch (e) {
@@ -206,6 +237,7 @@ function initSubscriptions() {
       onData: function (envelope) {
         cachedPots = envelope.instances || [];
         pushToWatch();
+        sendConfigData();
       },
       onError: function (err) {
         console.warn('[PKJS] Pot subscription error:', JSON.stringify(err));
@@ -228,20 +260,38 @@ Pebble.addEventListener('appmessage', function (e) {
   }
 });
 
+Pebble.addEventListener('showConfiguration', function (e) {
+  console.log('[PKJS] showConfiguration event fired');
+  var accSummaries = getAccountSummaries();
+  var configured = (isPluginConfigured || accSummaries.length > 0);
+  var statusText = latestData.KEY_STATUS || (configured ? 'Updated' : 'Ready');
+  var url = 'src/config.html?theme=' + encodeURIComponent(currentTheme) +
+            '&firstAccount=' + encodeURIComponent(currentFirstAccount) +
+            '&configured=' + (configured ? '1' : '0') +
+            '&status=' + encodeURIComponent(statusText) +
+            '&accounts=' + encodeURIComponent(JSON.stringify(accSummaries));
+  if (typeof Pebble.openURL === 'function') {
+    Pebble.openURL(url);
+  }
+  sendConfigData();
+  setTimeout(sendConfigData, 300);
+  setTimeout(sendConfigData, 1000);
+});
+
 Pebble.addEventListener('configmessage', function (e) {
-  var msg = (e && e.data) || {};
+  var msg = (e && e.data) || (e && e.message) || (e && e.payload) || e || {};
   console.log('[PKJS] Received configmessage:', JSON.stringify(msg));
-  if (msg.type === 'getAppConfig') {
-    if (typeof e.respond === 'function') {
-      e.respond({
-        theme: currentTheme,
-        firstAccountId: currentFirstAccount,
-        isConfigured: isPluginConfigured,
-        pluginStatus: latestData.KEY_STATUS || 'Ready',
-        accounts: getAccountSummaries()
-      });
-    }
-  } else if (msg.type === 'setAppConfig') {
+
+  var respondFn = (e && typeof e.respond === 'function') ? e.respond : null;
+  var responseData = {
+    theme: currentTheme,
+    firstAccountId: currentFirstAccount,
+    isConfigured: (isPluginConfigured || cachedAccounts.length > 0),
+    pluginStatus: latestData.KEY_STATUS || 'Ready',
+    accounts: getAccountSummaries()
+  };
+
+  if (msg.type === 'setAppConfig') {
     if (msg.theme) {
       currentTheme = msg.theme;
       try { localStorage.setItem('monzo_theme', currentTheme); } catch (err) {}
@@ -251,10 +301,16 @@ Pebble.addEventListener('configmessage', function (e) {
       try { localStorage.setItem('monzo_first_account', currentFirstAccount); } catch (err) {}
     }
     pushToWatch();
-    if (typeof e.respond === 'function') {
-      e.respond({ ok: true });
+    if (respondFn) {
+      respondFn({ ok: true });
+    }
+  } else {
+    // Default reply for getAppConfig or any query
+    if (respondFn) {
+      respondFn(responseData);
     }
   }
+  sendConfigData();
 });
 
 Pebble.addEventListener('webviewclosed', function (e) {

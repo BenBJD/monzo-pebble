@@ -72,20 +72,23 @@ function sendConfigData() {
 function pushToWatch() {
   var themeVal = (currentTheme === 'dark') ? 1 : 0;
   if (cachedAccounts.length === 0) {
+    var isOffline = (latestData.KEY_STATUS === 'Offline' || latestData.KEY_STATUS === 'No plugin API');
+    var emptyBalance = isOffline ? latestData.KEY_STATUS : 'Connect';
+    var emptySpend = isOffline ? 'Long press to retry' : 'Open settings';
     var emptyPayload = {
       KEY_THEME: themeVal,
       KEY_ACCOUNT_COUNT: 2,
       KEY_STATUS: latestData.KEY_STATUS || 'Setup',
       KEY_ACC0_ID: 'acc_personal',
       KEY_ACC0_NAME: 'PERSONAL',
-      KEY_ACC0_BALANCE: 'Connect',
-      KEY_ACC0_SPEND: 'Open settings',
+      KEY_ACC0_BALANCE: emptyBalance,
+      KEY_ACC0_SPEND: emptySpend,
       KEY_ACC0_TOTAL: '£0.00',
       KEY_ACC0_POTS: 'No active savings pots',
       KEY_ACC1_ID: 'acc_joint',
       KEY_ACC1_NAME: 'JOINT',
-      KEY_ACC1_BALANCE: 'Connect',
-      KEY_ACC1_SPEND: 'Open settings',
+      KEY_ACC1_BALANCE: emptyBalance,
+      KEY_ACC1_SPEND: emptySpend,
       KEY_ACC1_TOTAL: '£0.00',
       KEY_ACC1_POTS: 'No active savings pots'
     };
